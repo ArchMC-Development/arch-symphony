@@ -64,7 +64,7 @@ constructor(
     {
         if (!directory.toFile().exists())
         {
-            directory.toFile().createNewFile()
+            directory.toFile().mkdirs()
         }
 
         config = VelocityPlugins.createConfiguration(
