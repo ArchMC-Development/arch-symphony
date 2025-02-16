@@ -20,7 +20,6 @@ import lol.arch.symphony.player.PlayerCatalogue
 import java.io.File
 import java.nio.file.Path
 import java.time.Duration
-import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 import kotlin.properties.Delegates
 
@@ -62,6 +61,11 @@ constructor(
     val instanceTracker by lazy { LiveInstanceTracker() }
 
     lateinit var config: InstanceConfig
+
+    init
+    {
+        instance = this
+    }
 
     @Subscribe(order = PostOrder.LATE)
     fun ProxyInitializeEvent.on()
