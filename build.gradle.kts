@@ -5,8 +5,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     java
     `maven-publish`
-    kotlin("jvm") version "2.0.21"
-    kotlin("kapt") version "2.0.21"
+    kotlin("jvm") version "2.1.0"
+    kotlin("kapt") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0"
     id("com.gradleup.shadow") version "9.0.0-beta8"
     id("org.ajoberstar.grgit") version "4.1.1"
 }
@@ -30,7 +31,7 @@ dependencies {
     compileOnly("lol.arch.combinator:plugins-proxy:1.1.0")
     compileOnly("gg.scala.store:velocity:1.0.0")
 
-    compileOnly("gg.scala.commons:velocity:4.2.1")
+    compileOnly("gg.scala.commons:velocity:4.2.3")
 }
 
 kotlin {
