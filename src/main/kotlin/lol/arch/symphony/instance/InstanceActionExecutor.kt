@@ -1,10 +1,11 @@
-package lol.arch.symphony.player
+package lol.arch.symphony.instance
 
 import gg.scala.aware.AwareBuilder
 import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
 import gg.scala.aware.thread.AwareThreadContext
 import lol.arch.symphony.VelocitySymphonyPlugin
+import lol.arch.symphony.instance.actor.SymphonyCommandSource
 import lol.arch.symphony.instance.requests.RunCommandRequest
 import java.util.logging.Logger
 
@@ -12,21 +13,21 @@ import java.util.logging.Logger
  * @author GrowlyX
  * @since 2/15/2025
  */
-class PlayerReconciler
+class InstanceActionExecutor
 {
     private lateinit var plugin: VelocitySymphonyPlugin
 
     private val aware by lazy {
         AwareBuilder
-            .of<AwareMessage>("symphony:reconcile")
+            .of<AwareMessage>("symphony:commands")
             .codec(AwareMessageCodec)
             .logger(Logger.getGlobal())
             .build()
     }
 
-    fun reconcile(request: RunCommandRequest) = AwareMessage
+    fun runCommand(request: RunCommandRequest) = AwareMessage
         .of(
-            "reconcile",
+            "runCommand",
             aware,
             "request" to request
         )
@@ -34,24 +35,21 @@ class PlayerReconciler
             AwareThreadContext.SYNC
         )
 
-    fun startReconciliation(plugin: VelocitySymphonyPlugin)
+    fun startActionTracking(plugin: VelocitySymphonyPlugin)
     {
         this.plugin = plugin
 
-        aware.listen("reconcile") {
+        aware.listen("runCommand") {
             val request = retrieve<RunCommandRequest>("request")
-            if (plugin.config.id != request.instance)
+            if (!(request.instance == "all" || request.instance == plugin.config.id))
             {
                 return@listen
             }
 
-            if (plugin.server.getPlayer(request.player) != null)
-            {
-                return@listen
-            }
-
-            println("Deleting player for reconciliation")
-            plugin.playerTracker.delete(request.player)
+            plugin.server.commandManager.executeAsync(
+                SymphonyCommandSource,
+                request.command
+            )
         }
         aware.connect().toCompletableFuture().join()
     }

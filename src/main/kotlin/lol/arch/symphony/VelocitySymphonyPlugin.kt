@@ -11,8 +11,8 @@ import com.velocitypowered.api.proxy.ProxyServer
 import gg.scala.commons.ScalaCommons
 import gg.scala.commons.velocity.VelocityPlugins
 import lol.arch.combinator.CombinatorProxyPlugin
-import lol.arch.symphony.command.GlobalListCommand
-import lol.arch.symphony.command.TrackedPlayerCommand
+import lol.arch.symphony.command.*
+import lol.arch.symphony.instance.InstanceActionExecutor
 import lol.arch.symphony.instance.LiveInstanceTracker
 import lol.arch.symphony.player.PlayerReconciler
 import lol.arch.symphony.player.PlayerTracker
@@ -59,6 +59,7 @@ constructor(
     val playerReconciler by lazy { PlayerReconciler() }
 
     val instanceTracker by lazy { LiveInstanceTracker() }
+    val instanceActionExecutor by lazy { InstanceActionExecutor() }
 
     lateinit var config: InstanceConfig
 
@@ -92,6 +93,7 @@ constructor(
         playerTracker.plugin = this@VelocitySymphonyPlugin
         server.eventManager.register(this@VelocitySymphonyPlugin, playerTracker)
 
+        instanceActionExecutor.startActionTracking(this@VelocitySymphonyPlugin)
         instanceTracker.startTracking(
             this@VelocitySymphonyPlugin,
             config
@@ -127,7 +129,15 @@ constructor(
             .schedule()
 
         val commandManager = VelocityPlugins.createCommands(this@VelocitySymphonyPlugin)
+        commandManager.commandCompletions.registerCompletion("instances") {
+            instanceTracker.liveInstances()
+        }
+
         commandManager.registerCommand(TrackedPlayerCommand(this@VelocitySymphonyPlugin))
         commandManager.registerCommand(GlobalListCommand(this@VelocitySymphonyPlugin), true)
+        commandManager.registerCommand(RunCommandCommand(this@VelocitySymphonyPlugin), true)
+        commandManager.registerCommand(ServerIDCommand(this@VelocitySymphonyPlugin), true)
+        commandManager.registerCommand(ServerIDListCommand(this@VelocitySymphonyPlugin), true)
+        commandManager.registerCommand(PlayerProxyCommand(this@VelocitySymphonyPlugin), true)
     }
 }

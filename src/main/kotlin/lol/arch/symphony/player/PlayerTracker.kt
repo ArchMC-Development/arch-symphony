@@ -10,7 +10,7 @@ import gg.scala.commons.ScalaCommons
 import lol.arch.symphony.VelocitySymphonyPlugin
 import lol.arch.symphony.acquirePlayerLock
 import lol.arch.symphony.into
-import lol.arch.symphony.player.requests.PlayerReconcileRequest
+import lol.arch.symphony.instance.requests.RunCommandRequest
 import net.evilblock.cubed.serializers.Serializers
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -44,6 +44,8 @@ class PlayerTracker
                         return@acquirePlayerLock
                     }
 
+                    println("Player is on the network ${existing.instance}")
+
                     if (
                         existing.lastAttemptedReconcile != null &&
                         System.currentTimeMillis() - existing.lastAttemptedReconcile!! > Duration
@@ -51,13 +53,16 @@ class PlayerTracker
                             .toMillis()
                     )
                     {
+                        println("Trying to reconcile")
                         update(player.uniqueId) {
                             lastAttemptedReconcile = System.currentTimeMillis()
                         }
 
-                        plugin.playerReconciler.reconcile(PlayerReconcileRequest(
+                        plugin.playerReconciler.reconcile(
+                            RunCommandRequest(
                             player.uniqueId, existing.instance
-                        ))
+                        )
+                        )
                     }
 
                     result = ResultedEvent.ComponentResult.denied(Component.text {
