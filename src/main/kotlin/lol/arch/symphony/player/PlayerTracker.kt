@@ -11,6 +11,7 @@ import lol.arch.symphony.VelocitySymphonyPlugin
 import lol.arch.symphony.acquirePlayerLock
 import lol.arch.symphony.into
 import lol.arch.symphony.instance.requests.RunCommandRequest
+import lol.arch.symphony.player.requests.PlayerReconcileRequest
 import net.evilblock.cubed.serializers.Serializers
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -58,11 +59,9 @@ class PlayerTracker
                             lastAttemptedReconcile = System.currentTimeMillis()
                         }
 
-                        plugin.playerReconciler.reconcile(
-                            RunCommandRequest(
+                        plugin.playerReconciler.reconcile(PlayerReconcileRequest(
                             player.uniqueId, existing.instance
-                        )
-                        )
+                        ))
                     }
 
                     result = ResultedEvent.ComponentResult.denied(Component.text {

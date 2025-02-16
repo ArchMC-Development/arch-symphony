@@ -5,7 +5,7 @@ import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
 import gg.scala.aware.thread.AwareThreadContext
 import lol.arch.symphony.VelocitySymphonyPlugin
-import lol.arch.symphony.instance.requests.RunCommandRequest
+import lol.arch.symphony.player.requests.PlayerReconcileRequest
 import java.util.logging.Logger
 
 /**
@@ -24,7 +24,7 @@ class PlayerReconciler
             .build()
     }
 
-    fun reconcile(request: RunCommandRequest) = AwareMessage
+    fun reconcile(request: PlayerReconcileRequest) = AwareMessage
         .of(
             "reconcile",
             aware,
@@ -39,7 +39,7 @@ class PlayerReconciler
         this.plugin = plugin
 
         aware.listen("reconcile") {
-            val request = retrieve<RunCommandRequest>("request")
+            val request = retrieve<PlayerReconcileRequest>("request")
             if (plugin.config.id != request.instance)
             {
                 return@listen
