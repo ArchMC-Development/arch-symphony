@@ -82,7 +82,7 @@ constructor(
         }
 
         playerTracker.plugin = this@VelocitySymphonyPlugin
-        server.eventManager.register(this, playerTracker)
+        server.eventManager.register(this@VelocitySymphonyPlugin, playerTracker)
 
         instanceTracker.startTracking(
             this@VelocitySymphonyPlugin,
