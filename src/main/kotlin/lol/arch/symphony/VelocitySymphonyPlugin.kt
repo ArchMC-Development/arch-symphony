@@ -10,6 +10,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import gg.scala.commons.velocity.VelocityPlugins
 import lol.arch.combinator.CombinatorProxyPlugin
+import lol.arch.symphony.command.GlobalListCommand
 import lol.arch.symphony.command.TrackedPlayerCommand
 import lol.arch.symphony.instance.LiveInstanceTracker
 import lol.arch.symphony.player.PlayerReconciler
@@ -93,5 +94,6 @@ constructor(
 
         val commandManager = VelocityPlugins.createCommands(this@VelocitySymphonyPlugin)
         commandManager.registerCommand(TrackedPlayerCommand(this@VelocitySymphonyPlugin))
+        commandManager.registerCommand(GlobalListCommand(this@VelocitySymphonyPlugin), true)
     }
 }

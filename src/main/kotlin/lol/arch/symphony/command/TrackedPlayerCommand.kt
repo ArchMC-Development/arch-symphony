@@ -7,6 +7,7 @@ import gg.scala.commons.acf.annotation.CommandAlias
 import gg.scala.commons.acf.annotation.CommandCompletion
 import gg.scala.commons.acf.annotation.CommandPermission
 import lol.arch.symphony.VelocitySymphonyPlugin
+import net.evilblock.cubed.util.time.TimeUtil
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import java.util.UUID
@@ -43,7 +44,9 @@ class TrackedPlayerCommand(private val plugin: VelocitySymphonyPlugin) : BaseCom
             .color(NamedTextColor.GRAY)
             .append(
                 Component
-                    .text(trackedPlayer.loginTime)
+                    .text(TimeUtil.formatIntoAbbreviatedString(
+                        (System.currentTimeMillis() - trackedPlayer.loginTime).toInt() / 1000
+                    ))
                     .color(NamedTextColor.GREEN)
             ))
 
@@ -56,14 +59,24 @@ class TrackedPlayerCommand(private val plugin: VelocitySymphonyPlugin) : BaseCom
                     .color(if (trackedPlayer.server == null) NamedTextColor.RED else NamedTextColor.WHITE)
             ))
 
-
         player.sendMessage(Component
             .text("Last Switch: ")
             .color(NamedTextColor.GRAY)
             .append(
                 Component
-                    .text(if (trackedPlayer.lastServerSwitchTime == null) "None" else trackedPlayer.lastServerSwitchTime!!.toString())
+                    .text(if (trackedPlayer.lastServerSwitchTime == null) "None" else TimeUtil.formatIntoAbbreviatedString(
+                        (System.currentTimeMillis() - trackedPlayer.lastServerSwitchTime!!).toInt() / 1000
+                    ))
                     .color(if (trackedPlayer.lastServerSwitchTime == null) NamedTextColor.RED else NamedTextColor.WHITE)
+            ))
+
+        player.sendMessage(Component
+            .text("Previous Server: ")
+            .color(NamedTextColor.GRAY)
+            .append(
+                Component
+                    .text(if (trackedPlayer.lastServer == null) "None" else trackedPlayer.lastServer!!)
+                    .color(if (trackedPlayer.lastServer == null) NamedTextColor.RED else NamedTextColor.WHITE)
             ))
 
         player.sendMessage(Component
@@ -71,8 +84,10 @@ class TrackedPlayerCommand(private val plugin: VelocitySymphonyPlugin) : BaseCom
             .color(NamedTextColor.GRAY)
             .append(
                 Component
-                    .text(if (trackedPlayer.lastServerSwitchTime == null) "None" else trackedPlayer.lastAttemptedReconcile!!.toString())
-                    .color(if (trackedPlayer.lastServerSwitchTime == null) NamedTextColor.RED else NamedTextColor.WHITE)
+                    .text(if (trackedPlayer.lastAttemptedReconcile == null) "None" else TimeUtil.formatIntoAbbreviatedString(
+                        (System.currentTimeMillis() - trackedPlayer.lastAttemptedReconcile!!).toInt() / 1000
+                    ))
+                    .color(if (trackedPlayer.lastAttemptedReconcile == null) NamedTextColor.RED else NamedTextColor.WHITE)
             ))
 
         player.sendMessage(Component
@@ -80,7 +95,7 @@ class TrackedPlayerCommand(private val plugin: VelocitySymphonyPlugin) : BaseCom
             .color(NamedTextColor.GRAY)
             .append(
                 Component
-                    .text(trackedPlayer.lastHeartbeat)
+                    .text("${System.currentTimeMillis() - trackedPlayer.lastHeartbeat}ms")
                     .color(NamedTextColor.GREEN)
             ))
     }
