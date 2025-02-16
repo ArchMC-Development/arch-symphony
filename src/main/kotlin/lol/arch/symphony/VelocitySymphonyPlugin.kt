@@ -8,6 +8,7 @@ import com.velocitypowered.api.plugin.Dependency
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
+import gg.scala.commons.ScalaCommons
 import gg.scala.commons.velocity.VelocityPlugins
 import lol.arch.combinator.CombinatorProxyPlugin
 import lol.arch.symphony.command.GlobalListCommand
@@ -18,6 +19,8 @@ import lol.arch.symphony.player.PlayerTracker
 import lol.arch.symphony.player.PlayerCatalogue
 import java.io.File
 import java.nio.file.Path
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 import kotlin.properties.Delegates
 
@@ -91,6 +94,33 @@ constructor(
         )
         playerCatalogue.startTracking(this@VelocitySymphonyPlugin)
         playerReconciler.startReconciliation(this@VelocitySymphonyPlugin)
+
+        var previouslyNotMaster = true
+        server.scheduler
+            .buildTask(this@VelocitySymphonyPlugin, Runnable {
+                val proxyMaster = instanceTracker.liveInstances()
+                    .minByOrNull { it }
+                    ?: config.id
+
+                if (config.id == proxyMaster)
+                {
+                    if (previouslyNotMaster)
+                    {
+                        logger.info("Taking on role as player count master updater.")
+                        previouslyNotMaster = false
+                    }
+
+                    ScalaCommons.bundle().globals().redis().sync().set(
+                        "global-player-count",
+                        playerCatalogue.playerCount().toString()
+                    )
+                } else
+                {
+                    previouslyNotMaster = true
+                }
+            })
+            .repeat(Duration.ofMillis(500L))
+            .schedule()
 
         val commandManager = VelocityPlugins.createCommands(this@VelocitySymphonyPlugin)
         commandManager.registerCommand(TrackedPlayerCommand(this@VelocitySymphonyPlugin))
