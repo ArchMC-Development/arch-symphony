@@ -34,6 +34,9 @@ class PlayerTracker
             player.uniqueId
                 .acquirePlayerLock {
                     val existing = find(player.uniqueId)
+                    println(player.uniqueId)
+                    println("Existing: $existing")
+
                     if (existing == null)
                     {
                         val trackedPlayer = TrackedPlayer(
@@ -128,6 +131,11 @@ class PlayerTracker
     @Subscribe(order = PostOrder.LAST)
     fun DisconnectEvent.on()
     {
+        if (loginStatus != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN)
+        {
+            return
+        }
+
         player.uniqueId.acquirePlayerLock {
             delete(player.uniqueId)
         }
@@ -154,5 +162,8 @@ class PlayerTracker
     fun find(player: UUID) = ScalaCommons.bundle()
         .globals().redis().sync()
         .hget("symphony:players", player.toString())
+        ?.apply {
+            println(this)
+        }
         ?.into<TrackedPlayer>()
 }
