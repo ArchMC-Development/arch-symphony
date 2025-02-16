@@ -21,13 +21,18 @@ class GlobalListCommand(private val plugin: VelocitySymphonyPlugin) : BaseComman
         val players = plugin.playerCatalogue.playerCount()
         player.sendMessage(Component.text {
             it.append(Component
-                .text("$players")
+                .text("$players ")
                 .color(NamedTextColor.AQUA))
 
             it.append(Component
-                .text("player${if (players == 1) " is" else "s are"} currently connected to the proxy.")
+                .text("player${if (players == 1) " is" else "s are"} currently connected to the network.")
                 .color(NamedTextColor.GRAY))
         })
+
+        if (!player.hasPermission("symphony.command.glist.all"))
+        {
+            return
+        }
 
         if (all != null)
         {
