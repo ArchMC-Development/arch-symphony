@@ -26,7 +26,7 @@ class PlayerTracker
 {
     lateinit var plugin: VelocitySymphonyPlugin
 
-    @Subscribe(order = PostOrder.LAST)
+    @Subscribe(order = PostOrder.FIRST)
     fun LoginEvent.on()
     {
         runCatching {
