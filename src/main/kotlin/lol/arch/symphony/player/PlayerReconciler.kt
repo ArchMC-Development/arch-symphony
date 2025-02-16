@@ -50,7 +50,6 @@ class PlayerReconciler
                 return@listen
             }
 
-            println("Deleting player for reconciliation")
             plugin.playerTracker.delete(request.player)
         }
         aware.connect().toCompletableFuture().join()
