@@ -18,13 +18,4 @@ object Symphony
             .codec(AwareMessageCodec)
             .build()
     )
-
-    init
-    {
-        createEventSubscriber()
-            .onLogin {
-                println("player $it logged in")
-            }
-
-    }
 }
