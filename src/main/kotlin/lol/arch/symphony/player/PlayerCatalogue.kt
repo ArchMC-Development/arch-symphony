@@ -26,7 +26,7 @@ class PlayerCatalogue : Runnable
 
         plugin.server.scheduler
             .buildTask(plugin, this)
-            .repeat(Duration.ofMillis(500L))
+            .repeat(Duration.ofSeconds(1L))
             .schedule()
     }
 
@@ -51,7 +51,7 @@ class PlayerCatalogue : Runnable
         onProxy(plugin.config.id)
             .filter {
                 System.currentTimeMillis() - it.lastHeartbeat > Duration
-                    .ofHours(1L)
+                    .ofSeconds(5L)
                     .toMillis()
             }
             .forEach {
@@ -64,7 +64,7 @@ class PlayerCatalogue : Runnable
                         .globals().redis().sync()
                         .hexpire(
                             "symphony:players",
-                            60 * 60 * 6,
+                            10,
                             it.uniqueId.toString(),
                         )
                 }
