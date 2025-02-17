@@ -5,6 +5,7 @@ import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
+import com.velocitypowered.api.event.connection.PostLoginEvent
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
 import gg.scala.commons.ScalaCommons
 import lol.arch.symphony.VelocitySymphonyPlugin
@@ -26,23 +27,14 @@ class PlayerTracker
 {
     lateinit var plugin: VelocitySymphonyPlugin
 
-    @Subscribe(order = PostOrder.FIRST)
+    @Subscribe
     fun LoginEvent.on()
     {
         runCatching {
             player.uniqueId
                 .acquirePlayerLock {
                     val existing = find(player.uniqueId)
-                    if (existing == null)
-                    {
-                        val trackedPlayer = TrackedPlayer(
-                            uniqueId = player.uniqueId,
-                            instance = plugin.config.id
-                        )
-
-                        save(trackedPlayer)
-                        return@acquirePlayerLock
-                    }
+                        ?: return@acquirePlayerLock
 
                     if (
                         existing.lastAttemptedReconcile != null &&
@@ -55,9 +47,11 @@ class PlayerTracker
                             lastAttemptedReconcile = System.currentTimeMillis()
                         }
 
-                        plugin.playerReconciler.reconcile(PlayerReconcileRequest(
-                            player.uniqueId, existing.instance
-                        ))
+                        plugin.playerReconciler.reconcile(
+                            PlayerReconcileRequest(
+                                player.uniqueId, existing.instance
+                            )
+                        )
                     }
 
                     result = ResultedEvent.ComponentResult.denied(Component.text {
@@ -104,6 +98,25 @@ class PlayerTracker
         }
     }
 
+    @Subscribe(order = PostOrder.FIRST)
+    fun PostLoginEvent.on()
+    {
+        player.uniqueId
+            .acquirePlayerLock {
+                val existing = find(player.uniqueId)
+                if (existing == null)
+                {
+                    val trackedPlayer = TrackedPlayer(
+                        uniqueId = player.uniqueId,
+                        instance = plugin.config.id
+                    )
+
+                    save(trackedPlayer)
+                }
+            }
+            .join()
+    }
+
     @Subscribe(order = PostOrder.LAST)
     fun ServerPostConnectEvent.on()
     {
@@ -124,13 +137,14 @@ class PlayerTracker
     @Subscribe(order = PostOrder.LAST)
     fun DisconnectEvent.on()
     {
-        if (loginStatus != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN)
+        if (
+            loginStatus == DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN ||
+            loginStatus == DisconnectEvent.LoginStatus.PRE_SERVER_JOIN
+        )
         {
-            return
-        }
-
-        player.uniqueId.acquirePlayerLock {
-            delete(player.uniqueId)
+            player.uniqueId.acquirePlayerLock {
+                delete(player.uniqueId)
+            }
         }
     }
 
@@ -145,6 +159,15 @@ class PlayerTracker
             player.uniqueId.toString(),
             Serializers.gson.toJson(player)
         )
+        .apply {
+            ScalaCommons.bundle()
+                .globals().redis().sync()
+                .hexpire(
+                    "symphony:players",
+                    10,
+                    player.uniqueId.toString(),
+                )
+        }
 
     fun update(player: UUID, use: TrackedPlayer.() -> Unit) = find(player)
         ?.apply(use)

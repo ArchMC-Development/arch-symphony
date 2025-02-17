@@ -95,7 +95,9 @@ class TrackedPlayerCommand(private val plugin: VelocitySymphonyPlugin) : BaseCom
             .color(NamedTextColor.GRAY)
             .append(
                 Component
-                    .text("${System.currentTimeMillis() - trackedPlayer.lastHeartbeat}ms")
+                    .text("${TimeUtil.formatIntoAbbreviatedString(
+                        (System.currentTimeMillis() - trackedPlayer.lastHeartbeat).toInt() / 1000
+                    )}ms")
                     .color(NamedTextColor.GREEN)
             ))
     }
