@@ -7,6 +7,8 @@ import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
 import com.velocitypowered.api.event.connection.PostLoginEvent
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
+import gg.scala.aware.message.AwareMessage
+import gg.scala.aware.thread.AwareThreadContext
 import gg.scala.commons.ScalaCommons
 import lol.arch.symphony.VelocitySymphonyPlugin
 import lol.arch.symphony.acquirePlayerLock
@@ -112,6 +114,17 @@ class PlayerTracker
                     )
 
                     save(trackedPlayer)
+
+                    AwareMessage
+                        .of(
+                            "login",
+                            ScalaCommons.bundle().globals().aware(),
+                            "player" to player.uniqueId
+                        )
+                        .publish(
+                            AwareThreadContext.ASYNC,
+                            "symphony:networkEvents"
+                        )
                 }
             }
             .join()
@@ -132,6 +145,22 @@ class PlayerTracker
                 server = instanceID
             }
         }
+
+        if (previousServer != null)
+        {
+            AwareMessage
+                .of(
+                    "switch",
+                    ScalaCommons.bundle().globals().aware(),
+                    "player" to player.uniqueId,
+                    "from" to previousServer?.serverInfo?.name,
+                    "to" to instanceID
+                )
+                .publish(
+                    AwareThreadContext.SYNC,
+                    "symphony:networkEvents"
+                )
+        }
     }
 
     @Subscribe(order = PostOrder.LAST)
@@ -145,6 +174,17 @@ class PlayerTracker
             player.uniqueId.acquirePlayerLock {
                 delete(player.uniqueId)
             }
+
+            AwareMessage
+                .of(
+                    "logout",
+                    ScalaCommons.bundle().globals().aware(),
+                    "player" to player.uniqueId
+                )
+                .publish(
+                    AwareThreadContext.SYNC,
+                    "symphony:networkEvents"
+                )
         }
     }
 
