@@ -10,24 +10,21 @@ import java.util.UUID
  */
 class SymphonyClientBuilder(private val aware: Aware<AwareMessage>)
 {
-    fun onLogin(lambda: (UUID) -> Unit)
-    {
+    fun onLogin(lambda: (UUID) -> Unit) = apply {
         aware.listen("login") {
             val uniqueId = retrieve<UUID>("player")
             lambda(uniqueId)
         }
     }
 
-    fun onLogout(lambda: (UUID) -> Unit)
-    {
+    fun onLogout(lambda: (UUID) -> Unit) = apply {
         aware.listen("logout") {
             val uniqueId = retrieve<UUID>("player")
             lambda(uniqueId)
         }
     }
 
-    fun onSwitch(lambda: (UUID, String, String) -> Unit)
-    {
+    fun onSwitch(lambda: (UUID, String, String) -> Unit) = apply {
         aware.listen("switch") {
             val uniqueId = retrieve<UUID>("player")
             val from = retrieve<String>("from")
