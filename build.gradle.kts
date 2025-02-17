@@ -12,75 +12,76 @@ plugins {
     id("org.ajoberstar.grgit") version "4.1.1"
 }
 
-group = "lol.arch.symphony"
-version = "1.1.0"
+allprojects {
+    group = "lol.arch.symphony"
+    version = "1.1.0"
 
-repositories {
-    mavenCentral()
-    maven("https://nexus.velocitypowered.com/repository/maven-public/")
-    configureScalaRepository()
-}
-
-dependencies {
-    compileOnly(kotlin("stdlib"))
-    compileOnly(fileTree("lib"))
-
-    compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
-    kapt("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
-
-    compileOnly("lol.arch.combinator:plugins-proxy:1.1.0")
-    compileOnly("gg.scala.store:velocity:1.0.0")
-
-    compileOnly("gg.scala.commons:velocity:4.2.3")
-}
-
-kotlin {
-    jvmToolchain(jdkVersion = 21)
-}
-
-tasks.withType<ShadowJar> {
-    archiveClassifier.set("")
-    exclude(
-        "**/*.kotlin_metadata",
-        "**/*.kotlin_builtins",
-        "META-INF/"
-    )
-
-    archiveFileName.set(
-        "symphony.jar"
-    )
-}
-
-tasks.withType<JavaCompile> {
-    options.compilerArgs.add("-parameters")
-    options.fork()
-    options.encoding = "UTF-8"
-}
-
-tasks.withType<KotlinCompile> {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
-        javaParameters.set(true)
+    repositories {
+        mavenCentral()
+        maven("https://nexus.velocitypowered.com/repository/maven-public/")
+        configureScalaRepository()
     }
 }
 
-publishing {
-    repositories.configureScalaRepository()
+subprojects {
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "org.jetbrains.kotlin.kapt")
+    apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
+    apply(plugin = "com.gradleup.shadow")
+    apply(plugin = "maven-publish")
 
-    publications {
-        register(
-            name = "mavenJava",
-            type = MavenPublication::class,
-            configurationAction = shadow::component
+    dependencies {
+        compileOnly(kotlin("stdlib"))
+    }
+
+    kotlin {
+        jvmToolchain(jdkVersion = 21)
+    }
+
+    tasks.withType<ShadowJar> {
+        archiveClassifier.set("")
+        exclude(
+            "**/*.kotlin_metadata",
+            "**/*.kotlin_builtins",
+            "META-INF/"
+        )
+
+        archiveFileName.set(
+            "symphony.jar"
         )
     }
-}
 
-tasks.getByName("build")
-    .dependsOn(
-        "shadowJar",
-        "publishMavenJavaPublicationToScalaRepository"
-    )
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.add("-parameters")
+        options.fork()
+        options.encoding = "UTF-8"
+    }
+
+    tasks.withType<KotlinCompile> {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+            javaParameters.set(true)
+        }
+    }
+
+    publishing {
+        repositories.configureScalaRepository()
+
+        publications {
+            register(
+                name = "mavenJava",
+                type = MavenPublication::class,
+                configurationAction = shadow::component
+            )
+        }
+    }
+
+    tasks.getByName("build")
+        .dependsOn(
+            "shadowJar",
+            "publishMavenJavaPublicationToScalaRepository"
+        )
+}
 
 fun RepositoryHandler.configureScalaRepository(dev: Boolean = false)
 {
