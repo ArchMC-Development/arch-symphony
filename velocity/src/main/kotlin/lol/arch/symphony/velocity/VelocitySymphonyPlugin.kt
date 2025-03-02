@@ -101,33 +101,6 @@ constructor(
         playerCatalogue.startTracking(this@VelocitySymphonyPlugin)
         playerReconciler.startReconciliation(this@VelocitySymphonyPlugin)
 
-        var previouslyNotMaster = true
-        server.scheduler
-            .buildTask(this@VelocitySymphonyPlugin, Runnable {
-                val proxyMaster = instanceTracker.liveInstances()
-                    .minByOrNull { it }
-                    ?: config.id
-
-                if (config.id == proxyMaster)
-                {
-                    if (previouslyNotMaster)
-                    {
-                        logger.info("Taking on role as player count master updater.")
-                        previouslyNotMaster = false
-                    }
-
-                    ScalaCommons.bundle().globals().redis().sync().set(
-                        "global-player-count",
-                        playerCatalogue.playerCount().toString()
-                    )
-                } else
-                {
-                    previouslyNotMaster = true
-                }
-            })
-            .repeat(Duration.ofMillis(500L))
-            .schedule()
-
         val commandManager = VelocityPlugins.createCommands(this@VelocitySymphonyPlugin)
         commandManager.commandCompletions.registerCompletion("instances") {
             instanceTracker.liveInstances()
