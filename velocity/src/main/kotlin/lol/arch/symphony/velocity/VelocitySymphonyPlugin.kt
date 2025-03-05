@@ -8,9 +8,8 @@ import com.velocitypowered.api.plugin.Dependency
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
-import gg.scala.commons.ScalaCommons
+import gg.scala.commons.velocity.ScalaCommonsVelocity
 import gg.scala.commons.velocity.VelocityPlugins
-import lol.arch.combinator.CombinatorProxyPlugin
 import lol.arch.symphony.velocity.command.*
 import lol.arch.symphony.velocity.instance.InstanceActionExecutor
 import lol.arch.symphony.velocity.instance.LiveInstanceTracker
@@ -19,7 +18,6 @@ import lol.arch.symphony.velocity.player.PlayerTracker
 import lol.arch.symphony.velocity.player.PlayerCatalogue
 import java.io.File
 import java.nio.file.Path
-import java.time.Duration
 import java.util.logging.Logger
 import kotlin.properties.Delegates
 
@@ -84,10 +82,9 @@ constructor(
             InstanceConfig.serializer()
         )
 
-        if (server.pluginManager.isLoaded("combinator-proxy"))
-        {
-            config.id = CombinatorProxyPlugin.selfGameServerID
-            logger.info("Using Combinator for the instance ID")
+        runCatching {
+            config.id = ScalaCommonsVelocity.selfGameServerID
+            logger.info("Detected Agones environment, using ${config.id} as the new id.")
         }
 
         playerTracker.plugin = this@VelocitySymphonyPlugin

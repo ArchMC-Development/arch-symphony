@@ -157,7 +157,7 @@ class PlayerTracker
                     "to" to instanceID
                 )
                 .publish(
-                    AwareThreadContext.SYNC,
+                    AwareThreadContext.ASYNC,
                     "symphony:networkEvents"
                 )
         }
@@ -182,7 +182,7 @@ class PlayerTracker
                     "player" to player.uniqueId
                 )
                 .publish(
-                    AwareThreadContext.SYNC,
+                    AwareThreadContext.ASYNC,
                     "symphony:networkEvents"
                 )
         }
