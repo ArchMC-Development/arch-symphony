@@ -6,6 +6,8 @@ import gg.scala.commons.acf.ConditionFailedException
 import gg.scala.commons.acf.annotation.CommandAlias
 import lol.arch.symphony.velocity.VelocitySymphonyPlugin
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 
 /**
@@ -22,13 +24,32 @@ class ServerIDCommand(private val plugin: VelocitySymphonyPlugin) : BaseCommand(
 
         player.sendMessage(
             Component
-                .text("You are logged on ${trackedPlayer.instance}.")
-                .color(NamedTextColor.GREEN)
+                .text {
+                    it.append(Component
+                        .text("You are connected to proxy ")
+                        .color(NamedTextColor.YELLOW))
+
+                    it.append(Component
+                        .text(trackedPlayer.instance)
+                        .hoverEvent(HoverEvent.showText(Component
+                            .text("Click to suggest command.")
+                            .color(NamedTextColor.AQUA)))
+                        .clickEvent(ClickEvent.suggestCommand(trackedPlayer.instance))
+                        .color(NamedTextColor.AQUA))
+
+                    it.append(Component
+                        .text(".")
+                        .color(NamedTextColor.YELLOW))
+                }
         )
 
         player.sendMessage(
             Component
-                .text("You are on server ${trackedPlayer.server}.")
+                .text("You are playing on ${trackedPlayer.server}.")
+                .hoverEvent(HoverEvent.showText(Component
+                    .text("Click to suggest command.")
+                    .color(NamedTextColor.AQUA)))
+                .clickEvent(ClickEvent.suggestCommand(trackedPlayer.instance))
                 .color(NamedTextColor.GRAY)
         )
     }

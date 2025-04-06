@@ -40,15 +40,8 @@ subprojects {
 
     tasks.withType<ShadowJar> {
         archiveClassifier.set("")
-        exclude(
-            "**/*.kotlin_metadata",
-            "**/*.kotlin_builtins",
-            "META-INF/"
-        )
-
-        archiveFileName.set(
-            "symphony.jar"
-        )
+        exclude("META-INF/")
+        archiveFileName.set("symphony.jar")
     }
 
     tasks.withType<JavaCompile> {

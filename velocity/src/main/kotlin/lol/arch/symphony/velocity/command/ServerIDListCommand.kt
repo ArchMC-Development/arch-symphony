@@ -25,9 +25,17 @@ class ServerIDListCommand(private val plugin: VelocitySymphonyPlugin) : BaseComm
             .color(NamedTextColor.GREEN))
 
         instances.forEach { instance ->
-            player.sendMessage(Component
-                .text("- $instance")
-                .color(NamedTextColor.WHITE))
+            player.sendMessage(Component.text {
+                it.append(Component
+                    .text("- $instance")
+                    .color(NamedTextColor.WHITE))
+
+                it.append(Component
+                    .text(" (${
+                        plugin.instanceTracker.playerCount(instance)
+                    } online)")
+                    .color(NamedTextColor.GRAY))
+            })
         }
     }
 }

@@ -33,6 +33,15 @@ class LiveInstanceTracker : Runnable
 
     fun liveInstances() = lock.read { cache }
 
+    fun playerCount(instance: String) = ScalaCommons.bundle()
+        .globals().redis().sync()
+        .hget(
+            "symphony:instances",
+            instance
+        )
+        ?.toIntOrNull()
+        ?: 0
+
     override fun run()
     {
         lock.write {
