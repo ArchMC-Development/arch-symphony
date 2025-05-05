@@ -23,6 +23,7 @@ class PlayerCatalogue : Runnable
 
     fun startTracking(plugin: VelocitySymphonyPlugin)
     {
+
         this.plugin = plugin
 
         plugin.server.scheduler

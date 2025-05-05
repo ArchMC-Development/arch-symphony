@@ -33,6 +33,18 @@ class LiveInstanceTracker : Runnable
 
     fun liveInstances() = lock.read { cache }
 
+    fun globalPlayerCount() = cache
+        .sumOf { serverID ->
+            ScalaCommons
+                .bundle().globals().redis()
+                .sync().hget(
+                    "symphony:instances",
+                    serverID
+                )
+                ?.toIntOrNull()
+                ?: 0
+        }
+
     fun playerCount(instance: String) = ScalaCommons.bundle()
         .globals().redis().sync()
         .hget(
@@ -55,16 +67,17 @@ class LiveInstanceTracker : Runnable
                     plugin.server.playerCount.toString()
                 )
 
-                hexpire(
-                    "symphony:instances",
-                    2,
-                    instanceConfig.id
+                hset(
+                    "symphony:heartbeats",
+                    instanceConfig.id,
+                    System.currentTimeMillis().toString()
                 )
             }
 
             cache = ScalaCommons.bundle()
                 .globals().redis().sync()
-                .hgetall("symphony:instances")
+                .hgetall("symphony:heartbeats")
+                .filterNot { System.currentTimeMillis() - it.value.toLong() > 5000L }
                 .keys
                 .toSet()
         }

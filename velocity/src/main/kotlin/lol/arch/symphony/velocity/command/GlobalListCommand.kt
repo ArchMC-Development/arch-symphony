@@ -26,7 +26,7 @@ class GlobalListCommand(private val plugin: VelocitySymphonyPlugin) : BaseComman
 
             it.append(Component
                 .text("player${if (players == 1) " is" else "s are"} currently connected to the network.")
-                .color(NamedTextColor.GRAY))
+                .color(NamedTextColor.YELLOW))
         })
 
         if (!player.hasPermission("symphony.command.glist.all"))
@@ -63,7 +63,7 @@ class GlobalListCommand(private val plugin: VelocitySymphonyPlugin) : BaseComman
         player.sendMessage(Component.text {
             it.append(Component
                 .text("To view all players on servers, use /glist all.")
-                .color(NamedTextColor.WHITE))
+                .color(NamedTextColor.GRAY))
         })
     }
 }
