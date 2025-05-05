@@ -54,6 +54,17 @@ class LiveInstanceTracker : Runnable
         ?.toIntOrNull()
         ?: 0
 
+    fun deadInstances() = ScalaCommons.bundle()
+        .globals().redis().sync()
+        .hgetall("symphony:heartbeats")
+        .filter {
+            System.currentTimeMillis() - it.value.toLong() >= Duration
+                .ofSeconds(5L)
+                .toMillis()
+        }
+        .keys
+        .toSet()
+
     override fun run()
     {
         lock.write {

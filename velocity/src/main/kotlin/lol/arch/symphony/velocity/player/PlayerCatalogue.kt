@@ -31,6 +31,17 @@ class PlayerCatalogue : Runnable
             .schedule()
     }
 
+    fun deadPlayers() = ScalaCommons.bundle()
+        .globals().redis().sync()
+        .hgetall("symphony:players")
+        .values
+        .mapNotNull { it.into<TrackedPlayer>() }
+        .filter { tracked ->
+            System.currentTimeMillis() - tracked.lastHeartbeat >= Duration
+                .ofSeconds(5L)
+                .toMillis()
+        }
+
     fun players() = lock.read { cache }
     fun playerCount() = lock.read { cache.size }
 

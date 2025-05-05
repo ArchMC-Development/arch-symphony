@@ -16,6 +16,7 @@ import lol.arch.symphony.velocity.instance.LiveInstanceTracker
 import lol.arch.symphony.velocity.player.PlayerReconciler
 import lol.arch.symphony.velocity.player.PlayerTracker
 import lol.arch.symphony.velocity.player.PlayerCatalogue
+import lol.arch.symphony.velocity.system.SystemSentinel
 import java.io.File
 import java.nio.file.Path
 import java.util.logging.Logger
@@ -109,5 +110,7 @@ constructor(
         commandManager.registerCommand(ServerIDCommand(this@VelocitySymphonyPlugin), true)
         commandManager.registerCommand(ServerIDListCommand(this@VelocitySymphonyPlugin), true)
         commandManager.registerCommand(PlayerProxyCommand(this@VelocitySymphonyPlugin), true)
+
+        SystemSentinel.startSentinelWatcher(this@VelocitySymphonyPlugin)
     }
 }
