@@ -77,7 +77,11 @@ class LiveInstanceTracker : Runnable
             cache = ScalaCommons.bundle()
                 .globals().redis().sync()
                 .hgetall("symphony:heartbeats")
-                .filterNot { System.currentTimeMillis() - it.value.toLong() > 5000L }
+                .filterNot {
+                    System.currentTimeMillis() - it.value.toLong() > Duration
+                        .ofSeconds(5L)
+                        .toMillis()
+                }
                 .keys
                 .toSet()
         }

@@ -23,7 +23,6 @@ class PlayerCatalogue : Runnable
 
     fun startTracking(plugin: VelocitySymphonyPlugin)
     {
-
         this.plugin = plugin
 
         plugin.server.scheduler
@@ -46,6 +45,11 @@ class PlayerCatalogue : Runnable
                 .hgetall("symphony:players")
                 .values
                 .mapNotNull { it.into<TrackedPlayer>() }
+                .filterNot { tracked ->
+                    System.currentTimeMillis() - tracked.lastHeartbeat > Duration
+                        .ofSeconds(5L)
+                        .toMillis()
+                }
 
             cache = allPlayers.toSet()
         }
