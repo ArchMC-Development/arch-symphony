@@ -27,7 +27,7 @@ class PlayerCatalogue : Runnable
 
         plugin.server.scheduler
             .buildTask(plugin, this)
-            .repeat(Duration.ofSeconds(1L))
+            .repeat(Duration.ofMillis(500L))
             .schedule()
     }
 
@@ -45,6 +45,13 @@ class PlayerCatalogue : Runnable
     fun players() = lock.read { cache }
     fun playerCount() = lock.read { cache.size }
 
+    fun onProxyAll(proxyID: String) = ScalaCommons.bundle()
+        .globals().redis().sync()
+        .hgetall("symphony:players")
+        .values
+        .mapNotNull { it.into<TrackedPlayer>() }
+        .filter { player -> player.instance == proxyID }
+
     fun onProxy(proxyID: String) = cache.filter { it.instance == proxyID }
     fun onServer(server: String) = cache.filter { it.server == server }
 
@@ -58,14 +65,14 @@ class PlayerCatalogue : Runnable
                 .mapNotNull { it.into<TrackedPlayer>() }
                 .filterNot { tracked ->
                     System.currentTimeMillis() - tracked.lastHeartbeat > Duration
-                        .ofSeconds(5L)
+                        .ofSeconds(10L)
                         .toMillis()
                 }
 
             cache = allPlayers.toSet()
         }
 
-        onProxy(plugin.config.id)
+        onProxyAll(plugin.config.id)
             .filter {
                 System.currentTimeMillis() - it.lastHeartbeat > Duration
                     .ofSeconds(5L)
