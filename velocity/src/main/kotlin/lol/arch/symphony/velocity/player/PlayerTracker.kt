@@ -199,15 +199,6 @@ class PlayerTracker
             player.uniqueId.toString(),
             Serializers.gson.toJson(player)
         )
-        .apply {
-            ScalaCommons.bundle()
-                .globals().redis().sync()
-                .hexpire(
-                    "symphony:players",
-                    10,
-                    player.uniqueId.toString(),
-                )
-        }
 
     fun update(player: UUID, use: TrackedPlayer.() -> Unit) = find(player)
         ?.apply(use)

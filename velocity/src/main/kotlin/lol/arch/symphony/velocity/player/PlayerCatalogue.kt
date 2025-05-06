@@ -38,7 +38,7 @@ class PlayerCatalogue : Runnable
         .mapNotNull { it.into<TrackedPlayer>() }
         .filter { tracked ->
             System.currentTimeMillis() - tracked.lastHeartbeat >= Duration
-                .ofSeconds(5L)
+                .ofSeconds(10L)
                 .toMillis()
         }
 
@@ -76,14 +76,6 @@ class PlayerCatalogue : Runnable
                     plugin.playerTracker.update(it.uniqueId) {
                         lastHeartbeat = System.currentTimeMillis()
                     }
-
-                    ScalaCommons.bundle()
-                        .globals().redis().sync()
-                        .hexpire(
-                            "symphony:players",
-                            10,
-                            it.uniqueId.toString(),
-                        )
                 }
             }
     }
