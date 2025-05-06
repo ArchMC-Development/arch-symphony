@@ -43,14 +43,17 @@ class ServerIDCommand(private val plugin: VelocitySymphonyPlugin) : BaseCommand(
                 }
         )
 
-        player.sendMessage(
-            Component
-                .text("You are playing on ${trackedPlayer.server}.")
-                .hoverEvent(HoverEvent.showText(Component
-                    .text("Click to suggest command.")
-                    .color(NamedTextColor.AQUA)))
-                .clickEvent(ClickEvent.suggestCommand(trackedPlayer.instance))
-                .color(NamedTextColor.GRAY)
-        )
+        if (trackedPlayer.server != null)
+        {
+            player.sendMessage(
+                Component
+                    .text("You are playing on ${trackedPlayer.server}.")
+                    .hoverEvent(HoverEvent.showText(Component
+                        .text("Click to suggest command.")
+                        .color(NamedTextColor.AQUA)))
+                    .clickEvent(ClickEvent.suggestCommand(trackedPlayer.server!!))
+                    .color(NamedTextColor.GRAY)
+            )
+        }
     }
 }

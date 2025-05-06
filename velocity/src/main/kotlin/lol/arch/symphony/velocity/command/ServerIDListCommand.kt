@@ -20,6 +20,13 @@ class ServerIDListCommand(private val plugin: VelocitySymphonyPlugin) : BaseComm
     fun onInstanceList(player: Player)
     {
         val instances = plugin.instanceTracker.liveInstances()
+        player.sendMessage {
+            Component
+                .text("Sentinel: ")
+                .color(NamedTextColor.AQUA)
+                .append { Component.text(plugin.instanceTracker.sentinelInstance()) }
+        }
+
         player.sendMessage(Component
             .text("Listing all proxy instances:")
             .color(NamedTextColor.GREEN))

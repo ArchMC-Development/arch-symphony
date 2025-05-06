@@ -32,6 +32,7 @@ class LiveInstanceTracker : Runnable
     }
 
     fun liveInstances() = lock.read { cache }
+    fun sentinelInstance() = lock.read { cache.minOf { it } }
 
     fun globalPlayerCount() = cache
         .sumOf { serverID ->
