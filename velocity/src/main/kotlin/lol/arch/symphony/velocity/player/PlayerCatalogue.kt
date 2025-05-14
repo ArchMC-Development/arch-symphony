@@ -78,6 +78,9 @@ class PlayerCatalogue : Runnable
                     .ofSeconds(5L)
                     .toMillis()
             }
+            .filter {
+                plugin.server.getPlayer(it.uniqueId).isPresent
+            }
             .forEach {
                 it.uniqueId.acquirePlayerLock {
                     plugin.playerTracker.update(it.uniqueId) {
