@@ -110,6 +110,7 @@ constructor(
         commandManager.registerCommand(ServerIDCommand(this@VelocitySymphonyPlugin), true)
         commandManager.registerCommand(ServerIDListCommand(this@VelocitySymphonyPlugin), true)
         commandManager.registerCommand(PlayerProxyCommand(this@VelocitySymphonyPlugin), true)
+        commandManager.registerCommand(DeadServerIDListCommand(this@VelocitySymphonyPlugin), true)
 
         SystemSentinel.startSentinelWatcher(this@VelocitySymphonyPlugin)
     }

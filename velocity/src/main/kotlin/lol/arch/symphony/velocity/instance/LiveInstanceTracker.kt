@@ -57,13 +57,18 @@ class LiveInstanceTracker : Runnable
 
     fun deadInstances() = ScalaCommons.bundle()
         .globals().redis().sync()
-        .hgetall("symphony:heartbeats")
+        .hkeys("symphony:instances")
         .filter {
-            System.currentTimeMillis() - it.value.toLong() >= Duration
+            val heartbeat = ScalaCommons.bundle()
+                .globals().redis().sync()
+                .hget("symphony:heartbeats", it)
+                ?.toLongOrNull()
+                ?: 0L
+
+            System.currentTimeMillis() - heartbeat >= Duration
                 .ofSeconds(5L)
                 .toMillis()
         }
-        .keys
         .toSet()
 
     override fun run()
@@ -84,18 +89,16 @@ class LiveInstanceTracker : Runnable
                     instanceConfig.id,
                     System.currentTimeMillis().toString()
                 )
-            }
 
-            cache = ScalaCommons.bundle()
-                .globals().redis().sync()
-                .hgetall("symphony:heartbeats")
-                .filterNot {
-                    System.currentTimeMillis() - it.value.toLong() > Duration
-                        .ofSeconds(5L)
-                        .toMillis()
-                }
-                .keys
-                .toSet()
+                cache = hgetall("symphony:heartbeats")
+                    .filterNot {
+                        System.currentTimeMillis() - it.value.toLong() > Duration
+                            .ofSeconds(5L)
+                            .toMillis()
+                    }
+                    .keys
+                    .toSet()
+            }
         }
     }
 }
