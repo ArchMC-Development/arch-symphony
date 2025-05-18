@@ -1,3 +1,8 @@
+plugins {
+    kotlin("jvm") version "2.1.0"
+    kotlin("kapt") version "2.1.0"
+}
+
 dependencies {
     api(project(":api"))
 
