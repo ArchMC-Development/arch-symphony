@@ -5,5 +5,5 @@ dependencies {
     kapt("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
 
     compileOnly("gg.scala.store:velocity:1.0.0")
-    compileOnly("gg.scala.commons:velocity:4.5.8")
+    compileOnly("gg.scala.commons:velocity:6.4.0")
 }

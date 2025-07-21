@@ -16,8 +16,6 @@ class SystemSentinel : Runnable
 {
     private lateinit var plugin: VelocitySymphonyPlugin
 
-    val reconcileLock = ReentrantLock()
-
     companion object
     {
         fun startSentinelWatcher(
@@ -46,10 +44,8 @@ class SystemSentinel : Runnable
                         if (reconcilerInstance != null)
                         {
                             plugin.logger.info { "[sentinel] Was previously the system reconciler, but the responsibility has been moven to $chosenInstance. Stopping background tasks." }
-                            reconcilerInstance!!.reconcileLock.withLock {
-                                reconcilerInstance!!.stop()
-                                reconcilerInstance = null
-                            }
+                            reconcilerInstance!!.stop()
+                            reconcilerInstance = null
                         }
                     }
                 })
@@ -76,22 +72,20 @@ class SystemSentinel : Runnable
 
     override fun run()
     {
-        reconcileLock.withLock {
-            plugin.instanceTracker.deadInstances().onEach { instance ->
-                with(ScalaCommons.bundle().globals().redis().sync()) {
-                    hdel("symphony:instances", instance)
-                    hdel("symphony:heartbeats", instance)
-                }
-
-                plugin.logger.info { "[sentinel] Disposing $instance as the instance has been unresponsive for >5s." }
+        plugin.instanceTracker.deadInstances().onEach { instance ->
+            with(ScalaCommons.bundle().globals().redis().sync()) {
+                hdel("symphony:instances", instance)
+                hdel("symphony:heartbeats", instance)
             }
 
-            plugin.playerCatalogue.deadPlayers().onEach { player ->
-                plugin.playerTracker.delete(player.uniqueId)
-                plugin.logger.info { "[sentinel] Disposing player $player (${
-                    ScalaStoreUuidCache.username(player.uniqueId)
-                }) as they have been unresponsive for >5s." }
-            }
+            plugin.logger.info { "[sentinel] Disposing $instance as the instance has been unresponsive for >5s." }
+        }
+
+        plugin.playerCatalogue.deadPlayers().onEach { player ->
+            plugin.playerTracker.delete(player.uniqueId)
+            plugin.logger.info { "[sentinel] Disposing player $player (${
+                ScalaStoreUuidCache.username(player.uniqueId)
+            }) as they have been unresponsive for >5s." }
         }
     }
 }
