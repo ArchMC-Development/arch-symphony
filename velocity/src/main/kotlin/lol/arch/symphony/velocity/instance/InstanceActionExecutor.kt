@@ -1,13 +1,8 @@
 package lol.arch.symphony.velocity.instance
 
-import gg.scala.aware.AwareBuilder
-import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
-import gg.scala.aware.message.AwareMessage
-import gg.scala.aware.thread.AwareThreadContext
 import lol.arch.symphony.velocity.VelocitySymphonyPlugin
-import lol.arch.symphony.velocity.instance.actor.SymphonyCommandSource
 import lol.arch.symphony.velocity.instance.requests.RunCommandRequest
-import java.util.logging.Logger
+import lol.arch.symphony.velocity.rpc.SymphonyRPC
 
 /**
  * @author GrowlyX
@@ -17,40 +12,12 @@ class InstanceActionExecutor
 {
     private lateinit var plugin: VelocitySymphonyPlugin
 
-    private val aware by lazy {
-        AwareBuilder
-            .of<AwareMessage>("symphony:commands")
-            .codec(AwareMessageCodec)
-            .logger(Logger.getGlobal())
-            .build()
-    }
-
-    fun runCommand(request: RunCommandRequest) = AwareMessage
-        .of(
-            "runCommand",
-            aware,
-            "request" to request
-        )
-        .publish(
-            AwareThreadContext.SYNC
-        )
+    fun runCommand(request: RunCommandRequest) = SymphonyRPC.runCommandRPC
+        .callSync(request)
 
     fun startActionTracking(plugin: VelocitySymphonyPlugin)
     {
         this.plugin = plugin
-
-        aware.listen("runCommand") {
-            val request = retrieve<RunCommandRequest>("request")
-            if (!(request.instance == "all" || request.instance == plugin.config.id))
-            {
-                return@listen
-            }
-
-            plugin.server.commandManager.executeAsync(
-                SymphonyCommandSource,
-                request.command
-            )
-        }
-        aware.connect().toCompletableFuture().join()
+        SymphonyRPC.runCommandRPC.addHandler(RunCommandHandler(plugin))
     }
 }

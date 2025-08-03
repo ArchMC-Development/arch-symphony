@@ -72,21 +72,25 @@ class SystemSentinel : Runnable
 
     override fun run()
     {
-        plugin.instanceTracker.deadInstances().onEach { instance ->
-            with(ScalaCommons.bundle().globals().redis().sync()) {
-                hdel("symphony:instances", instance)
-                hdel("symphony:heartbeats", instance)
+        runCatching {
+            plugin.instanceTracker.deadInstances().onEach { instance ->
+                with(ScalaCommons.bundle().globals().redis().sync()) {
+                    hdel("symphony:instances", instance)
+                    hdel("symphony:heartbeats", instance)
+                }
+
+                plugin.logger.info { "[sentinel] Disposing $instance as the instance has been unresponsive for >5s." }
             }
 
-            plugin.logger.info { "[sentinel] Disposing $instance as the instance has been unresponsive for >5s." }
-        }
-
-        println(plugin.playerCatalogue.deadPlayers())
-        plugin.playerCatalogue.deadPlayers().onEach { player ->
-            plugin.playerTracker.delete(player.uniqueId)
-            plugin.logger.info { "[sentinel] Disposing player $player (${
-                ScalaStoreUuidCache.username(player.uniqueId)
-            }) as they have been unresponsive for >5s." }
+            println(plugin.playerCatalogue.deadPlayers())
+            plugin.playerCatalogue.deadPlayers().onEach { player ->
+                plugin.playerTracker.delete(player.uniqueId)
+                plugin.logger.info { "[sentinel] Disposing player $player (${
+                    ScalaStoreUuidCache.username(player.uniqueId)
+                }) as they have been unresponsive for >5s." }
+            }
+        }.onFailure { throwable ->
+            throwable.printStackTrace()
         }
     }
 }

@@ -1,15 +1,11 @@
 package lol.arch.symphony.velocity.player
 
-import gg.scala.aware.AwareBuilder
-import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
-import gg.scala.aware.message.AwareMessage
-import gg.scala.aware.thread.AwareThreadContext
 import lol.arch.symphony.api.model.TrackedPlayer
 import lol.arch.symphony.velocity.VelocitySymphonyPlugin
 import lol.arch.symphony.velocity.acquirePlayerLock
 import lol.arch.symphony.velocity.player.requests.PlayerReconcileRequest
+import lol.arch.symphony.velocity.rpc.SymphonyRPC
 import java.time.Duration
-import java.util.logging.Logger
 
 /**
  * @author GrowlyX
@@ -19,23 +15,8 @@ class PlayerReconciler : Runnable
 {
     private lateinit var plugin: VelocitySymphonyPlugin
 
-    private val aware by lazy {
-        AwareBuilder
-            .of<AwareMessage>("symphony:reconcile")
-            .codec(AwareMessageCodec)
-            .logger(Logger.getGlobal())
-            .build()
-    }
-
-    fun reconcile(request: PlayerReconcileRequest) = AwareMessage
-        .of(
-            "reconcile",
-            aware,
-            "request" to request
-        )
-        .publish(
-            AwareThreadContext.SYNC
-        )
+    fun reconcile(request: PlayerReconcileRequest) = SymphonyRPC
+        .reconcilePlayerRPC.callSync(request)
 
     fun startReconciliation(plugin: VelocitySymphonyPlugin)
     {
@@ -46,21 +27,7 @@ class PlayerReconciler : Runnable
             .repeat(Duration.ofSeconds(1L))
             .schedule()
 
-        aware.listen("reconcile") {
-            val request = retrieve<PlayerReconcileRequest>("request")
-            if (plugin.config.id != request.instance)
-            {
-                return@listen
-            }
-
-            if (plugin.server.getPlayer(request.player) != null)
-            {
-                return@listen
-            }
-
-            plugin.playerTracker.delete(request.player)
-        }
-        aware.connect().toCompletableFuture().join()
+        SymphonyRPC.reconcilePlayerRPC.addHandler(PlayerReconcilerHandler(plugin))
     }
 
     override fun run()
