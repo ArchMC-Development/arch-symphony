@@ -1,12 +1,12 @@
 package lol.arch.symphony.velocity.system
 
-import com.velocitypowered.api.scheduler.ScheduledTask
 import gg.scala.cache.uuid.ScalaStoreUuidCache
 import gg.scala.commons.ScalaCommons
 import lol.arch.symphony.velocity.VelocitySymphonyPlugin
-import okio.withLock
 import java.time.Duration
-import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 
 /**
  * @author Subham
@@ -18,6 +18,7 @@ class SystemSentinel : Runnable
 
     companion object
     {
+        private val sentinelScheduler = Executors.newSingleThreadScheduledExecutor()
         fun startSentinelWatcher(
             plugin: VelocitySymphonyPlugin
         )
@@ -56,18 +57,15 @@ class SystemSentinel : Runnable
 
     fun stop()
     {
-        task.cancel()
+        task.cancel(true)
     }
 
-    private lateinit var task: ScheduledTask
+    private lateinit var task: ScheduledFuture<*>
 
     fun start(plugin: VelocitySymphonyPlugin)
     {
         this.plugin = plugin
-        this.task = plugin.server.scheduler
-            .buildTask(plugin, this)
-            .repeat(Duration.ofMillis(500L))
-            .schedule()
+        this.task = sentinelScheduler.scheduleAtFixedRate(this, 0L, 500L, TimeUnit.MILLISECONDS)
     }
 
     override fun run()
@@ -82,7 +80,6 @@ class SystemSentinel : Runnable
                 plugin.logger.info { "[sentinel] Disposing $instance as the instance has been unresponsive for >5s." }
             }
 
-            println(plugin.playerCatalogue.deadPlayers())
             plugin.playerCatalogue.deadPlayers().onEach { player ->
                 plugin.playerTracker.delete(player.uniqueId)
                 plugin.logger.info { "[sentinel] Disposing player $player (${

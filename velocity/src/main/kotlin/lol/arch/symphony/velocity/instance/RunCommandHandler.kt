@@ -24,9 +24,14 @@ class RunCommandHandler(
             return
         }
 
-        plugin.server.commandManager.executeAsync(
-            SymphonyCommandSource,
-            request.command
-        )
+        plugin.server.commandManager
+            .executeImmediatelyAsync(
+                SymphonyCommandSource,
+                request.command
+            )
+            .thenRunAsync {
+                plugin.logger.info { "Ran remote command ${request.command}" }
+            }
+            .join()
     }
 }
