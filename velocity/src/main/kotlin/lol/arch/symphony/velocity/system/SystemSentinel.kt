@@ -81,6 +81,7 @@ class SystemSentinel : Runnable
             plugin.logger.info { "[sentinel] Disposing $instance as the instance has been unresponsive for >5s." }
         }
 
+        println(plugin.playerCatalogue.deadPlayers())
         plugin.playerCatalogue.deadPlayers().onEach { player ->
             plugin.playerTracker.delete(player.uniqueId)
             plugin.logger.info { "[sentinel] Disposing player $player (${
